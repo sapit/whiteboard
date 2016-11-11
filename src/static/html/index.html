@@ -1,0 +1,46 @@
+<html>
+        <head>
+            <script type="text/javascript" src="https://raw.github.com/mozilla/pdf.js/gh-pages/build/pdf.js"></script>
+        </head>
+        <script>
+
+            function go2Random()
+            {
+                var authorColor = getParameterByName('authorColor');
+                if (authorColor != "") {
+                    window.location = "d/" + randomPadName() + "?authorColor=" + authorColor;
+                } else {
+                    window.location = "d/" + randomPadName();
+                }
+            }
+
+            function randomPadName()
+            {
+                var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+                var string_length = 10;
+                var randomstring = '';
+                for (var i = 0; i < string_length; i++)
+                {
+                    var rnum = Math.floor(Math.random() * chars.length);
+                    randomstring += chars.substring(rnum, rnum + 1);
+                }
+                return randomstring;
+            }
+
+            function getParameterByName(name)
+            {
+                name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+                var regexS = "[\\?&]" + name + "=([^&#]*)";
+                var regex = new RegExp(regexS);
+                var results = regex.exec(window.location.search);
+                if(results == null) {
+                    return "";
+                }
+                else {
+                    return decodeURIComponent(results[1].replace(/\+/g, " "));
+                }
+            }
+
+           go2Random();
+        </script>
+</html>

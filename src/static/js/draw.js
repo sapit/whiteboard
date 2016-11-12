@@ -99,29 +99,54 @@ $(document).ready(function() {
   // PDFJS.getDocument(data).then(function (pdfDocument) {
   //   console.log('Number of pages: ' + pdfDocument.numPages);
   // });
-  var url = "../static/pdf/Andrey-Georgiev-CV-October.pdf";
-  console.log("socket");
-  console.log(socket);
-  loadPDF(url);
+
+  // var url = "../static/pdf/Andrey-Georgiev-CV-October.pdf";
+  // console.log("socket");
+  // console.log(socket);
+  // console.log(num_of_users);
+  // if(num_of_users==undefined || num_of_users<=1)
+  //   loadPDF(url);
 
 });
 var pdf=null;
-function loadPDF(url){
-    // var url = "../static/pdf/Andrey-Georgiev-CV-October.pdf";
-    PDFJS.getDocument({url:url}).then(function getPdfHelloWorld(pdf_local) {
+function justLoadPDF(url){
+    return PDFJS.getDocument({url:url}).then(function getPdfHelloWorld(pdf_local) {
         //
         // Fetch the first page
         //
+        console.log(pdf);
+        console.log(pdf_local);
+
         pdf=pdf_local;
-        if(num_of_users>1)
-            return;
-        loadPDFpage(1);
+        // currentPage=1;
+        // if(num_of_users>1)
+        //     return;
+        // loadPDFpage(1);
       });
+}
+
+function loadPDF(url){
+    // var url = "../static/pdf/Andrey-Georgiev-CV-October.pdf";
+    console.log("trying to open url");
+    console.log(url);
+    // PDFJS.getDocument({url:url}).then(function getPdfHelloWorld(pdf_local) {
+    //     //
+    //     // Fetch the first page
+    //     //
+    //     console.log(pdf);
+    //     console.log(pdf_local);
+    //
+    //     pdf=pdf_local;
+    //     // currentPage=1;
+    //     // if(num_of_users>1)
+    //     //     return;
+    //     loadPDFpage(1);
+    //   });
+    justLoadPDF(url).then(function(){loadPDFpage(1)});
 }
 function loadPDFpage(pagenum){
     console.log("load page "+pagenum);
-    if(pagenum>pdf.numPages && pagenum<=0)
-        return;
+
     pdf.getPage(pagenum).then(function getPageHelloWorld(page) {
       var scale = 1.2;
       var viewport = page.getViewport(scale);
@@ -135,6 +160,7 @@ function loadPDFpage(pagenum){
       // canvas.width = viewport.width;
 
       clearCanvas();
+      socket.emit('canvas:clear', room);
 
 
       //
@@ -142,30 +168,30 @@ function loadPDFpage(pagenum){
       //
       var task = page.render({canvasContext: context, viewport: viewport});
       task.promise.then(function(){
-              // console.log(canvas.toDataURL('image/jpeg'));
-              var image = new Image();
-              image.src = canvas.toDataURL('image/jpeg');
-              // context.drawImage(image,0,0);
-              // $('#myCanvas').css("background-image", 'url(' + image.src + ')');
-              // $("body").append("<img src='" + canvas.toDataURL('image/jpg') + "' />");
-              // console.log("$user_count");
-              // console.log($user_count);
-              // $user_count
-              console.log("num_of_users");
-              console.log(num_of_users);
+          // console.log(canvas.toDataURL('image/jpeg'));
+          var image = new Image();
+          image.src = canvas.toDataURL('image/jpeg');
+          // context.drawImage(image,0,0);
+          // $('#myCanvas').css("background-image", 'url(' + image.src + ')');
+          // $("body").append("<img src='" + canvas.toDataURL('image/jpg') + "' />");
+          // console.log("$user_count");
+          // console.log($user_count);
+          // $user_count
+          console.log("num_of_users");
+          console.log(num_of_users);
 
-              var bin=image.src;
-              var raster = new Raster(bin);
-              console.log("view");
-              console.log(view);
-              console.log(view.center);
+          var bin=image.src;
+          var raster = new Raster(bin);
+          console.log("view");
+          console.log(view);
+          console.log(view.center);
 
-              raster.position = view.center;
-              console.log("raster.position");
-              console.log(raster.position);
-              raster.name = uid + ":" + (++paper_object_count);
-              socket.emit('image:add', room, uid, JSON.stringify(bin), raster.position, raster.name);
-            });
+          raster.position = view.center;
+          console.log("raster.position");
+          console.log(raster.position);
+          raster.name = uid + ":" + (++paper_object_count);
+          socket.emit('image:add', room, uid, JSON.stringify(bin), raster.position, raster.name);
+        });
     });
 }
 
@@ -173,16 +199,21 @@ function loadPDFpage(pagenum){
 var currentPage=1;
 
 $("#next").on("click", function(){
+    if(currentPage>=pdf.numPages)
+        return;
     currentPage++;
     // loadPDFpage(currentPage);
-    console.log("next");
-    console.log(socket);
+    loadPDFpage(currentPage);
+
     socket.emit("changePage",room,currentPage);
 });
 
 $("#prev").on("click", function(){
+    if(currentPage<=1)
+        return;
     currentPage--;
     // loadPDFpage(currentPage);
+    loadPDFpage(currentPage);
     socket.emit("changePage",room,currentPage);
 });
 // $(document).ready(function(){
@@ -207,6 +238,47 @@ function scrolled(x, y, delta) {
   view.draw();
   */
 }
+
+//CHAT
+
+$('form').submit(function(){
+    socket.emit('chat message', $('#hidName').val(), $('#m').val());
+    $('#m').val('');
+    return false;
+});
+
+$('#m').on('input', function(){
+    if($('#m').val().length != 0)
+    { socket.emit('typing', $('#hidName').val()) }
+    else{ socket.emit('notTyping'); }
+    return false;
+});
+
+$(document).ready(function(){
+    console.log($('#myModal'));
+    $('#myModal').modal('show');
+});
+
+function saveUsername(){
+    var username = $('#username').val();
+    $('#hidName').val(username);
+    $('#myModal').modal('toggle');
+}
+$(".save-username").on("click", saveUsername);
+
+$('#username').keyup(function(e){
+    if (e.which == 13){
+        saveUsername();
+    }
+});
+$(document).on('shown.bs.modal', function() {
+    $("#username").focus();
+});
+$(document).on('hidden.bs.modal', function() {
+    $("#m").focus();
+});
+
+
 
 
 $('#activeColorSwatch').css('background-color', $('.colorSwatch.active').css('background-color'));
@@ -302,6 +374,84 @@ $('#clearImage').click(function() {
 $('#toggleBackground').click(function() {
   $('#myCanvas').toggleClass('whiteBG');
 });
+
+
+//UPLOAD
+
+$('.upload-btn').on('click', function (){
+    $('#upload-input').click();
+});
+
+$('#upload-input').on('change', function(){
+
+  var files = $(this).get(0).files;
+
+  if (files.length > 0){
+    // create a FormData object which will be sent as the data payload in the
+    // AJAX request
+    var formData = new FormData();
+
+    // loop through all the selected files and add them to the formData object
+    for (var i = 0; i < files.length; i++) {
+      var file = files[i];
+
+      // add the files to formData object for the data payload
+      formData.append('uploads[]', file, file.name);
+    }
+
+    $.ajax({
+      url: '/upload',
+      type: 'POST',
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function(data){
+          console.log('upload successful!\n' + data);
+          loadPDF(data);
+        socket.emit('uploadedPDF', room, data);
+      },
+      xhr: function() {
+        // create an XMLHttpRequest
+        var xhr = new XMLHttpRequest();
+
+        // listen to the 'progress' event
+        xhr.upload.addEventListener('progress', function(evt) {
+
+          if (evt.lengthComputable) {
+            // calculate the percentage of upload completed
+            var percentComplete = evt.loaded / evt.total;
+            percentComplete = parseInt(percentComplete * 100);
+
+            // update the Bootstrap progress bar with the new percentage
+            $('.progress-bar').text(percentComplete + '%');
+            $('.progress-bar').width(percentComplete + '%');
+
+            // once the upload reaches 100%, set the progress bar text to done
+            if (percentComplete === 100) {
+              $('.progress-bar').html('Done');
+            }
+
+          }
+
+        }, false);
+
+        return xhr;
+      }
+    });
+
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
 
 // ---------------------------------
 // DRAWING EVENTS
@@ -840,6 +990,11 @@ socket.on('draw:progress', function(artist, data) {
   }
 
 });
+socket.on('newPDF', function(url) {
+    console.log("justLoadPDF");
+    justLoadPDF(url);
+});
+
 
 socket.on('draw:end', function(artist, data) {
 
@@ -850,8 +1005,17 @@ socket.on('draw:end', function(artist, data) {
 
 });
 var num_of_users=0;
-socket.on('user:connect', function(user_count) {
+socket.on('user:connect', function(user_count, pagenum, roomPDFurl) {
+
   console.log("user:connect");
+  // console.log(pagenum);
+    if(pagenum!=null)
+        currentPage=pagenum;
+    if(roomPDFurl!=null)
+    {
+        // url=roomPDFurl;
+        justLoadPDF(roomPDFurl);
+    }
   update_user_count(user_count);
   num_of_users=user_count;
 });
@@ -929,10 +1093,39 @@ socket.on('image:add', function(artist, data, position, name) {
 });
 
 socket.on('pageChanged',function(pagenum){
+    console.log("in pageChanged");
     currentPage = pagenum;
     // console.log(pagenum);
-    loadPDFpage(currentPage);
-    console.log("in pageChanged");
+    // loadPDFpage(currentPage);
+});
+
+
+socket.on('chat message', function(username, msg){
+
+    var d = new Date();
+    d = d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
+    var userDate = d + " <b>" + username + ": </b>";
+
+    if(username == $('#hidName').val()){
+        $('#messages').append($('<li class="mine list-group-item">').html('<div>' + msg + '</div>'));
+    }
+    else{
+        $('#messages').append($('<li class="list-group-item">').html('<div>' + userDate + msg + '</div>'));
+    }
+    $('#t').hide();
+    // console.log($("#messages")[0].scrollHeight);
+    // $("#messages").scrollTop($("#messages")[0].scrollHeight); //Scrolls
+    // $("body").scrollTop($("#messages")[0].scrollHeight); //Scrolls
+
+});
+
+socket.on('typing', function(username){
+    $('#t').show();
+    $('#t').text(username + " is typing...");
+});
+
+socket.on('notTyping', function(){
+    $('#t').hide();
 });
 
 console.log(view);

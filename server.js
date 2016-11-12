@@ -14,6 +14,9 @@ var settings = require('./src/util/Settings.js'),
     fs = require('fs'),
     http = require('http'),
     https = require('https');
+var formidable = require('formidable');
+var path = require('path');
+
 
 /**
  * SSL Logic and Server bindings
@@ -89,7 +92,39 @@ app.get('/tests/frontend', function (req, res) {
 // Static files IE Javascript and CSS
 app.use("/static", express.static(__dirname + '/src/static'));
 
+app.post('/upload', function(req, res){
 
+  // create an incoming form object
+  var form = new formidable.IncomingForm();
+
+  // specify that we want to allow the user to upload multiple files in a single request
+  form.multiples = false;
+
+  // store all uploads in the /uploads directory
+  form.uploadDir = path.join(__dirname, '/src/static/pdf');
+  var filename=null;
+  // every time a file has been uploaded successfully,
+  // rename it to it's orignal name
+  form.on('file', function(field, file) {
+    //   fs.rename(file.path, path.join(form.uploadDir, file.name));
+    fs.rename(file.path, path.join(form.uploadDir, file.name));
+    filename=file.name;
+  });
+
+  // log any errors that occur
+  form.on('error', function(err) {
+    console.log('An error has occured: \n' + err);
+  });
+
+  // once all the files have been uploaded, send a response to the client
+  form.on('end', function() {
+    res.end('../static/pdf/'+filename);
+  });
+
+  // parse the incoming request containing the form data
+  form.parse(req);
+
+});
 
 
 // LISTEN FOR REQUESTS
@@ -100,6 +135,7 @@ console.log("Access Etherdraw at http://"+settings.ip+":"+settings.port);
 
 // SOCKET IO
 io.sockets.on('connection', function (socket) {
+
   socket.on('disconnect', function () {
     console.log("Socket disconnected");
     // TODO: We should have logic here to remove a drawing from memory as we did previously
@@ -171,24 +207,31 @@ io.sockets.on('connection', function (socket) {
   });
 
   socket.on('changePage',function(room, pagenum){
-      console.log(room);
-      console.log(pagenum);
-      console.log(currentPages[room]);
-    //   console.log('data["currentPage"]');
-    //   console.log(data["currentPage"]);
     currentPages[room]=pagenum;
     io.sockets.in(room).emit("pageChanged",pagenum);
-
-    //   if(data["currentPage"])
-    //   {
-    //       currentPage=data["currentPage"];
-    //       // console.log(currentPage);
-    //   }
   });
+
+  socket.on('uploadedPDF',function(room, url){
+    // currentPages[room]=pagenum;
+    currentUrl[room]=url;
+    io.sockets.in(room).emit("newPDF",url);
+  });
+
+
+    socket.on('chat message', function(username, msg){
+    	io.emit('chat message', username, msg);
+    });
+    socket.on('typing', function(username){
+    	socket.broadcast.emit('typing', username);
+    });
+    socket.on('notTyping', function(){
+    	socket.broadcast.emit('notTyping');
+    });
 
 });
 
 var currentPages={};
+var currentUrl={};
 
 // Subscribe a client to a room
 function subscribe(socket, data) {
@@ -202,7 +245,7 @@ function subscribe(socket, data) {
   //  clearTimeout(closeTimer[room]);
   // }
   if(currentPages[room]==null)
-    currentPages[room]=0;
+    currentPages[room]=1;
 
   // Create Paperjs instance for this room if it doesn't exist
   var project = projects.projects[room];
@@ -224,7 +267,7 @@ function subscribe(socket, data) {
   // Broadcast to room the new user count -- currently broken
   var rooms = socket.adapter.rooms[room];
   var roomUserCount = Object.keys(rooms).length;
-  io.to(room).emit('user:connect', roomUserCount);
+  io.to(room).emit('user:connect', roomUserCount, currentPages[room], currentUrl[room]);
 }
 
 // Send current project to new client

@@ -255,7 +255,7 @@ $('#m').on('input', function(){
 });
 
 $(document).ready(function(){
-    console.log($('#myModal'));
+    // console.log($('#myModal'));
     $('#myModal').modal('show');
 });
 
@@ -1107,16 +1107,16 @@ socket.on('chat message', function(username, msg){
     var userDate = d + " <b>" + username + ": </b>";
 
     if(username == $('#hidName').val()){
-        $('#messages').append($('<li class="mine list-group-item">').html('<div>' + msg + '</div>'));
+        $('#messages').append($('<li class="mine  list-group-item"  >').html('<div class="message" data-placement="top" data-toggle="tooltip" title="' + d +'">' + msg + '</div>'));
     }
     else{
-        $('#messages').append($('<li class="list-group-item">').html('<div>' + userDate + msg + '</div>'));
+        $('#messages').append($('<li class=" list-group-item">').html('<div class="message" data-placement="top" data-toggle="tooltip" title="' + d +'">' + "<b>" + username + ": " + "</b>" + msg + '</div>'));
     }
     $('#t').hide();
     // console.log($("#messages")[0].scrollHeight);
     // $("#messages").scrollTop($("#messages")[0].scrollHeight); //Scrolls
     // $("body").scrollTop($("#messages")[0].scrollHeight); //Scrolls
-
+    $('[data-toggle="tooltip"]').tooltip();
 });
 
 socket.on('typing', function(username){

@@ -126,6 +126,7 @@ function justLoadPDF(url){
 }
 
 function loadPDF(url){
+    currentPage=1;
     // var url = "../static/pdf/Andrey-Georgiev-CV-October.pdf";
     console.log("trying to open url");
     console.log(url);
@@ -480,21 +481,21 @@ function onMouseDown(event) {
   }
 
   mouseTimer = 0;
-  mouseHeld = setInterval(function() { // is the mouse being held and not dragged?
-    mouseTimer++;
-    if (mouseTimer > 3) {
-      mouseTimer = 0;
-      clearInterval(mouseHeld);
-      var picker = $('#mycolorpicker');
-      picker.toggle(); // show the color picker
-      if (picker.is(':visible')) {
-        // Mad hackery to get round issues with event.point
-        var targetPos = $(event.event.target).position();
-        var point = event.point + new Point(targetPos.left, targetPos.top);
-        positionPickerInCanvas(point);
-      }
-    }
-  }, 100);
+  // mouseHeld = setInterval(function() { // is the mouse being held and not dragged?
+  //   mouseTimer++;
+  //   if (mouseTimer > 3) {
+  //     mouseTimer = 0;
+  //     clearInterval(mouseHeld);
+  //     var picker = $('#mycolorpicker');
+  //     picker.toggle(); // show the color picker
+  //     if (picker.is(':visible')) {
+  //       // Mad hackery to get round issues with event.point
+  //       var targetPos = $(event.event.target).position();
+  //       var point = event.point + new Point(targetPos.left, targetPos.top);
+  //       positionPickerInCanvas(point);
+  //     }
+  //   }
+  // }, 100);
 
   if (activeTool == "draw" || activeTool == "pencil") {
     var point = event.point;
@@ -818,10 +819,20 @@ $('#embedlink').on('click', function() {
   $('#embed').fadeToggle();
 });
 $('#importExport').on('click', function() {
-  $('#importexport').fadeToggle();
+  // $('#importexport').fadeToggle();
+    var canvas = $('#myCanvas');
+
+    // window.open(canvas[0].toDataURL('image/png'));
+    var gh = canvas[0].toDataURL('png');
+
+    var a  = document.createElement('a');
+    a.href = gh;
+    a.download = 'image.png';
+
+    a.click()
 });
 $('#usericon').on('click', function() {
-  $('#mycolorpicker').fadeToggle();
+  // $('#mycolorpicker').fadeToggle();
 });
 $('#clearCanvas').on('click', function() {
   clearCanvas();

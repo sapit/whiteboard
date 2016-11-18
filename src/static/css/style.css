@@ -62,7 +62,7 @@ body {
 .toolbar ul li a:hover {
   text-decoration: none;
 }
-.toolbar ul li a:hover {
+.toolbar ul li a:not(.nohover):hover {
   background: #fff;
   background: -webkit-linear-gradient(#f4f4f4, #e4e4e4);
   background: -moz-linear-gradient(#f4f4f4, #e4e4e4);
@@ -473,4 +473,30 @@ input[type=checkbox] {
 
 .whiteBG{
   background-color:#fff;
+}
+#clearImage .buttonicon {
+    background-image: url(../../static/img/clearCanvas.png) !important;
+    background-size: cover;
+}
+
+#upload .buttonicon {
+    background-image: url(../../static/img/uploadPDF2.png);
+    background-size: cover;
+}
+#next .buttonicon {
+    background-image: url(../../static/img/nextPage2.png);
+    background-size: cover;
+}
+#prev .buttonicon {
+    background-image: url(../../static/img/prevPage2.png);
+    background-size: cover;
+}
+.buttonicon-import_export {
+    background-image: url(../../static/img/save-icon.png);
+    background-size: cover;
+    background-position: 0px 0px;
+}
+
+#usericon a {
+    cursor: default !important;
 }

@@ -25,7 +25,7 @@ body {
   padding-top: 4px;
   width: 100%;
   white-space: nowrap;
-  height: 32px;
+  height: 50px;
   position:absolute;
   left:0px;
   right:0px;
@@ -82,12 +82,12 @@ body {
   color: #ccc;
   cursor: pointer;
   display: inline-block;
-  min-height: 18px;
+  min-height: 37px;
   overflow: hidden;
   padding: 4px 5px;
   text-align: center;
   text-decoration: none;
-  min-width: 18px;
+  min-width: 37px;
 }
 .toolbar ul li a .buttonicon {
   position: relative;
@@ -222,21 +222,22 @@ body {
   height: 50px
 }
 .buttonicon {
-  width: 16px;
-  height: 16px;
+  width: 23px;
+  height: 23px;
   background-image: url('../../static/img/etherpad_lite_icons.png');
   background-repeat: no-repeat;
   display: inline-block;
   vertical-align: middle;
+  background-position: center;
 }
 .buttonicon-draw {
-  background-image: url('../../static/img/brush.png');
+  background-image: url('../../static/img/brush-broom.png');
 }
 .buttonicon-pencil {
-  background-image: url('../../static/img/pencil.png');
+  background-image: url('../../static/img/pencil-icon.png');
 }
 .buttonicon-select {
-  background-image: url('../../static/img/select.png');
+  background-image: url('../../static/img/selectTool.png');
 }
 .buttonicon-upload {
   background-image: url('../../static/img/upload.png');
@@ -244,14 +245,12 @@ body {
 .buttonicon-settings {
   background-position: 0px -436px
 }
-.buttonicon-import_export {
-  background-position: 0px -68px
-}
+
 .buttonicon-embed {
   background-position: 0px -18px
 }
 .buttonicon-showusers {
-  background-position: 0px -183px;
+  background-image: url('../../static/img/user.png');
 }
 #online_count {
   color: #888;
@@ -499,4 +498,9 @@ input[type=checkbox] {
 
 #usericon a {
     cursor: default !important;
+}
+
+.buttonicon-color{
+	background-image: url(../../static/img/color-picker-icon-1.png);
+	opacity : 1 !important;
 }
